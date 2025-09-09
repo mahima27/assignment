@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+    spec:
+      containers:
+        - name: backend
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          env:
+            - name: MONGO_CONN_STR
+              value: {{ .Values.env.MONGO_DB_URL }}
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.env.MONGO_SECRET }}
+                  key: username
+            - name: MONGO_PASSWORD
+              valueFrom:
+               secretKeyRef:
+                 name: {{ .Values.env.MONGO_SECRET }}
+                 key: password
+        
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

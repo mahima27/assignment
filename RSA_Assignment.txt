@@ -1,0 +1,68 @@
+Task1:
+
+-> Install Docker Desktop and create Docker account.
+-> Install WSL on windows system and add Ubuntu distro
+-> Exec into Ubuntu wsl and execute commands to create self hosted github runner
+    cd /home/<user>
+    mkdir actions-runner && cd actions-runner
+    curl -o actions-runner-linux-x64-2.328.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.328.0/actions-runner-linux-x64-2.328.0.tar.gz
+    tar xzf ./actions-runner-linux-x64-2.328.0.tar.gz
+    ./config.sh --url https://github.com/mahima27/nodejs-hello-world --token <>
+    ./run.sh
+
+-> Login to above docker account
+    docker login docker.io -u <username> -p <pwd>
+
+-> Deploy sonarqube locally
+    docker run -d --name sonarqube -p 9000:9000 sonarqube:latest
+    # Sonar will be accessible at http://localhost:9000 on browser
+
+-> Github actions pipeline has been setup to build code,run codequality scan, build and push image to dockerhub registry. (Refer task1 folder)
+
+Task2:
+
+-> Install aws-cli
+
+-> Install Terraform
+   sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
+   wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
+   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?   <=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+   sudo apt update
+   sudo apt-get install terraform
+
+-> Install kubectl
+   curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+   chmod +x kubectl
+   sudo mv kubectl /usr/local/bin/kubectl
+
+-> Install Helm:
+   curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+   chmod 700 get_helm.sh
+   ./get_helm.sh
+
+-> AWS account is created
+
+-> Using terraform script deployed eks cluster on AWS and deployed three tier application on the same using helm. (Refer task2 folder)
+
+terraform init
+terraform apply
+
+Once eks cluster is created:
+aws eks update-kubeconfig --region us-east-1 --name test-cluster
+kubectl create namespace workshop
+
+docker build -t three_tier_frontend:v1
+docker tag three_tier_frontend:v1 docker.io/mittalmah01/three_tier_frontend:v1
+docker push docker.io/mittalmah01/three_tier_frontend:v1
+
+
+docker build -t three_tier_backend:v1
+docker tag three_tier_backend:v1 docker.io/mittalmah01/three_tier_backend:v1
+docker push docker.io/mittalmah01/three_tier_backend:v1
+
+
+helm install frontend ./ -n workshop
+helm install backend ./ -n workshop
+cd mongo
+kubectl create -f .
