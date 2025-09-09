@@ -45,6 +45,7 @@ Task2:
 
 -> Using terraform script deployed eks cluster on AWS and deployed three tier application on the same using helm. (Refer task2 folder)
 
+aws configure
 terraform init
 terraform apply
 
